@@ -1,5 +1,9 @@
 from graphviz import Digraph
 
+# ---------------------------
+# Parte 1: Procesamiento de la expresión regular y árbol sintáctico
+# ---------------------------
+
 # Clase para representar un nodo del árbol sintáctico
 class Node:
     def __init__(self, value, left=None, right=None):
@@ -15,7 +19,7 @@ class Node:
         return (f"Node({self.value}, pos={self.position}, nullable={self.nullable}, "
                 f"firstpos={self.firstpos}, lastpos={self.lastpos})")
 
-# Función para insertar el operador de concatenación ('.') de forma explícita
+# Inserta explícitamente el operador de concatenación ('.')
 def add_concat_operator(regex):
     result = ""
     for i in range(len(regex)):
@@ -23,11 +27,12 @@ def add_concat_operator(regex):
         result += c
         if i + 1 < len(regex):
             next_c = regex[i+1]
+            # Se inserta concatenación si c no es '|' ni '(' y next_c no es '|' ni ')' ni '*'
             if (c not in {'|', '('} and next_c not in {'|', ')', '*'}):
                 result += '.'
     return result
 
-# Función para convertir la expresión de infijo a postfijo (algoritmo Shunting-yard)
+# Conversión de expresión infijo a postfijo (Shunting-yard)
 def infix_to_postfix(regex):
     precedence = {'*': 3, '.': 2, '|': 1}
     output = []
@@ -40,7 +45,7 @@ def infix_to_postfix(regex):
         elif c == ')':
             while stack and stack[-1] != '(':
                 output.append(stack.pop())
-            stack.pop()
+            stack.pop()  # Remover '('
         else:
             while (stack and stack[-1] != '(' and
                    precedence.get(stack[-1], 0) >= precedence.get(c, 0)):
@@ -50,10 +55,10 @@ def infix_to_postfix(regex):
         output.append(stack.pop())
     return "".join(output)
 
-# Función para construir el árbol sintáctico a partir de la notación postfija
+# Construcción del árbol sintáctico a partir de la notación postfija
 def build_syntax_tree(postfix):
     stack = []
-    position_counter = 1  # Contador para etiquetar las hojas
+    position_counter = 1  # Para etiquetar las hojas
     for symbol in postfix:
         if symbol.isalnum() or symbol in {'#', 'ε'}:
             node = Node(symbol)
@@ -71,7 +76,8 @@ def build_syntax_tree(postfix):
             stack.append(node)
     return stack.pop()
 
-# Función para calcular la propiedad anulable (nullable)
+# Cálculo de nullable, firstpos y lastpos
+
 def compute_nullable(node):
     if node is None:
         return False
@@ -79,14 +85,10 @@ def compute_nullable(node):
         node.nullable = True if node.value == 'ε' else False
         return node.nullable
     if node.value == '|':
-        left_nullable = compute_nullable(node.left)
-        right_nullable = compute_nullable(node.right)
-        node.nullable = left_nullable or right_nullable
+        node.nullable = compute_nullable(node.left) or compute_nullable(node.right)
         return node.nullable
     if node.value == '.':
-        left_nullable = compute_nullable(node.left)
-        right_nullable = compute_nullable(node.right)
-        node.nullable = left_nullable and right_nullable
+        node.nullable = compute_nullable(node.left) and compute_nullable(node.right)
         return node.nullable
     if node.value == '*':
         compute_nullable(node.left)
@@ -94,7 +96,6 @@ def compute_nullable(node):
         return node.nullable
     return False
 
-# Función para calcular firstpos en el árbol sintáctico
 def compute_firstpos(node):
     if node is None:
         return set()
@@ -102,25 +103,18 @@ def compute_firstpos(node):
         node.firstpos = set() if node.value == 'ε' else {node.position}
         return node.firstpos
     if node.value == '|':
-        left_first = compute_firstpos(node.left)
-        right_first = compute_firstpos(node.right)
-        node.firstpos = left_first.union(right_first)
+        node.firstpos = compute_firstpos(node.left).union(compute_firstpos(node.right))
         return node.firstpos
     if node.value == '.':
         left_first = compute_firstpos(node.left)
         right_first = compute_firstpos(node.right)
-        if node.left.nullable:
-            node.firstpos = left_first.union(right_first)
-        else:
-            node.firstpos = left_first
+        node.firstpos = left_first.union(right_first) if node.left.nullable else left_first
         return node.firstpos
     if node.value == '*':
-        child_first = compute_firstpos(node.left)
-        node.firstpos = child_first
+        node.firstpos = compute_firstpos(node.left)
         return node.firstpos
     return set()
 
-# Función para calcular lastpos en el árbol sintáctico
 def compute_lastpos(node):
     if node is None:
         return set()
@@ -128,25 +122,57 @@ def compute_lastpos(node):
         node.lastpos = set() if node.value == 'ε' else {node.position}
         return node.lastpos
     if node.value == '|':
-        left_last = compute_lastpos(node.left)
-        right_last = compute_lastpos(node.right)
-        node.lastpos = left_last.union(right_last)
+        node.lastpos = compute_lastpos(node.left).union(compute_lastpos(node.right))
         return node.lastpos
     if node.value == '.':
         left_last = compute_lastpos(node.left)
         right_last = compute_lastpos(node.right)
-        if node.right.nullable:
-            node.lastpos = left_last.union(right_last)
-        else:
-            node.lastpos = right_last
+        node.lastpos = left_last.union(right_last) if node.right.nullable else right_last
         return node.lastpos
     if node.value == '*':
-        child_last = compute_lastpos(node.left)
-        node.lastpos = child_last
+        node.lastpos = compute_lastpos(node.left)
         return node.lastpos
     return set()
 
-# Función para inicializar la tabla de followpos (diccionario)
+# Visualización del árbol sintáctico usando Graphviz
+def visualize_tree(node):
+    dot = Digraph(comment='Árbol Sintáctico')
+
+    def add_nodes_edges(current_node, parent_id=None):
+        if current_node is None:
+            return
+        node_id = str(id(current_node))
+        label = (f"{current_node.value}\\npos: {current_node.position}\\n"
+                 f"nullable: {current_node.nullable}\\n"
+                 f"firstpos: {current_node.firstpos}\\n"
+                 f"lastpos: {current_node.lastpos}")
+        # Colorear: hojas en verde, ramas en café
+        if current_node.left is None and current_node.right is None:
+            dot.node(node_id, label, style='filled', fillcolor='lightgreen')
+        else:
+            dot.node(node_id, label, style='filled', fillcolor='burlywood')
+        if parent_id:
+            dot.edge(parent_id, node_id)
+        add_nodes_edges(current_node.left, node_id)
+        add_nodes_edges(current_node.right, node_id)
+
+    add_nodes_edges(node)
+    return dot
+
+# Función para imprimir el árbol (para depuración)
+def print_tree(node, indent=""):
+    if node is not None:
+        print(indent + f"({node.value}, pos={node.position}, nullable={node.nullable}, "
+              f"firstpos={node.firstpos}, lastpos={node.lastpos})")
+        if node.left or node.right:
+            print_tree(node.left, indent + "  ")
+            print_tree(node.right, indent + "  ")
+
+# ---------------------------
+# Parte 2: Cálculo de followpos y construcción del DFA
+# ---------------------------
+
+# Inicializa la tabla de followpos y mapea posición a símbolo
 def initialize_followpos(node, followpos, pos_to_symbol):
     if node is None:
         return
@@ -157,7 +183,9 @@ def initialize_followpos(node, followpos, pos_to_symbol):
         initialize_followpos(node.left, followpos, pos_to_symbol)
         initialize_followpos(node.right, followpos, pos_to_symbol)
 
-# Función para calcular followpos en el árbol sintáctico
+# Calcula followpos según reglas:
+# - En c1.c2, para cada posición en lastpos(c1), se añade firstpos(c2)
+# - En c*, para cada posición en lastpos(c), se añade firstpos(c)
 def compute_followpos(node, followpos):
     if node is None:
         return
@@ -170,7 +198,7 @@ def compute_followpos(node, followpos):
     compute_followpos(node.left, followpos)
     compute_followpos(node.right, followpos)
 
-# Función para construir el DFA usando followpos y el árbol sintáctico
+# Construcción del DFA a partir del árbol y tabla followpos
 def build_dfa(syntax_tree, followpos, pos_to_symbol):
     initial_state = frozenset(syntax_tree.firstpos)
     states = {initial_state: "S0"}  # Mapeo: conjunto de posiciones -> nombre de estado
@@ -178,7 +206,7 @@ def build_dfa(syntax_tree, followpos, pos_to_symbol):
     dfa_transitions = {}  # (estado, símbolo) -> estado destino
     state_counter = 1
 
-    # Definir el alfabeto: símbolos de las hojas, excluyendo ε y '#' (este último se usa para marcar fin)
+    # Alfabeto: símbolos de las hojas, excluyendo 'ε' y '#' (este último marca fin)
     alphabet = {symbol for pos, symbol in pos_to_symbol.items() if symbol not in {'ε', '#'}}
 
     while unmarked_states:
@@ -197,7 +225,7 @@ def build_dfa(syntax_tree, followpos, pos_to_symbol):
                 dfa_transitions[(states[T], a)] = states[U_frozen]
     return states, dfa_transitions, initial_state
 
-# Función para obtener los estados de aceptación (si incluyen la posición de '#')
+# Obtiene los estados de aceptación: aquellos que contienen la posición del símbolo '#'
 def get_accepting_states(states, pos_to_symbol):
     accepting = []
     for state_set, name in states.items():
@@ -207,38 +235,102 @@ def get_accepting_states(states, pos_to_symbol):
                 break
     return accepting
 
-# Función para graficar el DFA usando Graphviz
-def visualize_dfa(states, dfa_transitions, initial_state, accepting_states):
+# Visualiza el DFA usando Graphviz
+def visualize_dfa(dfa_states, dfa_transitions, initial_state, accepting_states, filename):
     dot = Digraph(comment='DFA')
 
-    # Crear los nodos del DFA
-    for state_set, label in states.items():
-        if label in accepting_states:
-            dot.node(label, label, shape='doublecircle', style='filled', fillcolor='lightblue')
+    # Crear nodos (se espera que dfa_states sea un conjunto de nombres de estado)
+    for state in dfa_states:
+        if state in accepting_states:
+            dot.node(state, state, shape='doublecircle', style='filled', fillcolor='lightblue')
         else:
-            dot.node(label, label, shape='circle', style='filled', fillcolor='white')
-
+            dot.node(state, state, shape='circle', style='filled', fillcolor='white')
     # Nodo inicial invisible y flecha hacia el estado inicial
     dot.node("", "", shape="none")
-    dot.edge("", states[initial_state])
+    dot.edge("", initial_state)
 
-    # Agregar las transiciones
+    # Agregar transiciones
     for (src, symbol), dest in dfa_transitions.items():
         dot.edge(src, dest, label=symbol)
 
+    dot.render(filename, view=True, format='png')
     return dot
 
-# Función auxiliar para imprimir el árbol sintáctico (incluye nullable, firstpos y lastpos)
-def print_tree(node, indent=""):
-    if node is not None:
-        print(indent + f"({node.value}, pos={node.position}, nullable={node.nullable}, "
-              f"firstpos={node.firstpos}, lastpos={node.lastpos})")
-        if node.left or node.right:
-            print_tree(node.left, indent + "  ")
-            print_tree(node.right, indent + "  ")
+# ---------------------------
+# Parte 3: Minimización del DFA (método de particiones)
+# ---------------------------
+def minimize_dfa(dfa_transitions, states, initial_state, accepting_states):
+    # Q: conjunto de todos los nombres de estado
+    Q = set(states.values())
+    # Partición inicial: estados de aceptación y no aceptación
+    P = []
+    if accepting_states:
+        P.append(set(accepting_states))
+    non_accepting = Q - set(accepting_states)
+    if non_accepting:
+        P.append(non_accepting)
 
-# Función principal que integra todos los pasos
+    # Alfabeto: extraído de la tabla de transiciones
+    alphabet = {symbol for (state, symbol) in dfa_transitions.keys()}
+
+    changed = True
+    while changed:
+        changed = False
+        new_P = []
+        # Mapeo: estado -> índice del bloque en P
+        state_to_block = {}
+        for i, block in enumerate(P):
+            for state in block:
+                state_to_block[state] = i
+        # Refinar cada bloque de la partición
+        for block in P:
+            groups = {}
+            for state in block:
+                # Se obtiene el comportamiento para cada símbolo: a qué bloque se transita
+                behavior = tuple(state_to_block.get(dfa_transitions.get((state, a))) for a in sorted(alphabet))
+                groups.setdefault(behavior, set()).add(state)
+            if len(groups) == 1:
+                new_P.append(block)
+            else:
+                new_P.extend(groups.values())
+                changed = True
+        P = new_P
+
+    # Asignar nuevos nombres a cada bloque
+    block_to_name = {}
+    for i, block in enumerate(P):
+        block_to_name[frozenset(block)] = f"M{i}"
+
+    # Mapeo: cada estado antiguo a su nuevo nombre
+    state_to_new = {}
+    for block in P:
+        new_name = block_to_name[frozenset(block)]
+        for state in block:
+            state_to_new[state] = new_name
+
+    # Reconstruir la tabla de transiciones del DFA minimizado
+    new_dfa_transitions = {}
+    for (state, symbol), target in dfa_transitions.items():
+        new_src = state_to_new[state]
+        new_target = state_to_new[target]
+        new_dfa_transitions[(new_src, symbol)] = new_target
+
+    # Nuevo estado inicial: el bloque que contiene el estado inicial original
+    new_initial_state = state_to_new[states[initial_state]]
+    # Estados de aceptación minimizados: bloques que contengan algún estado de aceptación
+    new_accepting_states = set()
+    for block in P:
+        if block.intersection(set(accepting_states)):
+            new_accepting_states.add(block_to_name[frozenset(block)])
+
+    new_states = set(block_to_name.values())
+    return new_states, new_dfa_transitions, new_initial_state, new_accepting_states
+
+# ---------------------------
+# Función principal: integra todos los pasos
+# ---------------------------
 if __name__ == "__main__":
+    # Entrada de la expresión regular
     regex_input = input("Ingresa la expresión regular: ")
 
     # Paso 1: Aumentar la expresión agregando '#' al final
@@ -255,29 +347,31 @@ if __name__ == "__main__":
 
     # Paso 4: Construir el árbol sintáctico y etiquetar las hojas
     syntax_tree = build_syntax_tree(postfix)
-    print("Árbol sintáctico (antes de calcular funciones):")
+    print("\nÁrbol sintáctico (antes de calcular funciones):")
     print_tree(syntax_tree)
 
     # Paso 5: Calcular nullable, firstpos y lastpos
     compute_nullable(syntax_tree)
     compute_firstpos(syntax_tree)
     compute_lastpos(syntax_tree)
-
     print("\nÁrbol sintáctico (después de calcular nullable, firstpos y lastpos):")
     print_tree(syntax_tree)
+
+    # Visualizar el árbol sintáctico
+    tree_dot = visualize_tree(syntax_tree)
+    tree_dot.render("syntax_tree", view=True, format="png")
 
     # Paso 6: Calcular followpos
     followpos = {}
     pos_to_symbol = {}
     initialize_followpos(syntax_tree, followpos, pos_to_symbol)
     compute_followpos(syntax_tree, followpos)
-
     print("\nTabla de followpos:")
     print("{:<10} {:<10} {:<20}".format("Posición", "Símbolo", "Followpos"))
     for pos in sorted(followpos.keys()):
         print("{:<10} {:<10} {:<20}".format(pos, pos_to_symbol[pos], str(followpos[pos])))
 
-    # Paso 7: Construir el DFA
+    # Paso 7: Construir el DFA a partir del árbol sintáctico
     states, dfa_transitions, initial_state = build_dfa(syntax_tree, followpos, pos_to_symbol)
     accepting_states = get_accepting_states(states, pos_to_symbol)
 
@@ -285,10 +379,22 @@ if __name__ == "__main__":
     print("{:<10} {:<10} {:<10}".format("Estado", "Símbolo", "Siguiente Estado"))
     for (state, symbol), dest in dfa_transitions.items():
         print("{:<10} {:<10} {:<10}".format(state, symbol, dest))
-
     print("\nEstado inicial:", states[initial_state])
     print("Estados de aceptación:", accepting_states)
 
-    # Paso 8: Graficar el DFA
-    dfa_dot = visualize_dfa(states, dfa_transitions, initial_state, accepting_states)
-    dfa_dot.render('dfa', view=True, format='png')
+    # Dibujo del DFA normal (no minimizado)
+    visualize_dfa(set(states.values()), dfa_transitions, states[initial_state], accepting_states, "dfa_normal")
+
+    # Paso 8: Minimizar el DFA
+    new_states, new_dfa_transitions, new_initial_state, new_accepting_states = minimize_dfa(
+        dfa_transitions, states, initial_state, accepting_states)
+
+    print("\nDFA Minimizado - Tabla de Transiciones:")
+    print("{:<10} {:<10} {:<10}".format("Estado", "Símbolo", "Siguiente Estado"))
+    for (state, symbol), dest in new_dfa_transitions.items():
+        print("{:<10} {:<10} {:<10}".format(state, symbol, dest))
+    print("\nEstado inicial (minimizado):", new_initial_state)
+    print("Estados de aceptación (minimizado):", new_accepting_states)
+
+    # Dibujo del DFA minimizado
+    visualize_dfa(new_states, new_dfa_transitions, new_initial_state, new_accepting_states, "dfa_minimizado")
