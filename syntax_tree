@@ -1,26 +1,26 @@
 // Árbol Sintáctico
 digraph {
-	2951678657040 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {6}" fillcolor=burlywood style=filled]
-	2951678656592 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {5}" fillcolor=burlywood style=filled]
-	2951678657040 -> 2951678656592
-	2951678590672 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {4}" fillcolor=burlywood style=filled]
-	2951678656592 -> 2951678590672
-	2951678588944 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {3}" fillcolor=burlywood style=filled]
-	2951678590672 -> 2951678588944
-	2951674348496 [label="*\npos: None\nnullable: True\nfirstpos: {1, 2}\nlastpos: {1, 2}" fillcolor=burlywood style=filled]
-	2951678588944 -> 2951674348496
-	2951674346960 [label="|\npos: None\nnullable: False\nfirstpos: {1, 2}\nlastpos: {1, 2}" fillcolor=burlywood style=filled]
-	2951674348496 -> 2951674346960
-	2951678477392 [label="a\npos: 1\nnullable: False\nfirstpos: {1}\nlastpos: {1}" fillcolor=lightgreen style=filled]
-	2951674346960 -> 2951678477392
-	2951674346704 [label="b\npos: 2\nnullable: False\nfirstpos: {2}\nlastpos: {2}" fillcolor=lightgreen style=filled]
-	2951674346960 -> 2951674346704
-	2951674352016 [label="a\npos: 3\nnullable: False\nfirstpos: {3}\nlastpos: {3}" fillcolor=lightgreen style=filled]
-	2951678588944 -> 2951674352016
-	2951678590608 [label="b\npos: 4\nnullable: False\nfirstpos: {4}\nlastpos: {4}" fillcolor=lightgreen style=filled]
-	2951678590672 -> 2951678590608
-	2951678590736 [label="b\npos: 5\nnullable: False\nfirstpos: {5}\nlastpos: {5}" fillcolor=lightgreen style=filled]
-	2951678656592 -> 2951678590736
-	2951678656848 [label="#\npos: 6\nnullable: False\nfirstpos: {6}\nlastpos: {6}" fillcolor=lightgreen style=filled]
-	2951678657040 -> 2951678656848
+	1569596459152 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {6}" fillcolor=burlywood style=filled]
+	1569596458896 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {5}" fillcolor=burlywood style=filled]
+	1569596459152 -> 1569596458896
+	1569596458768 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {4}" fillcolor=burlywood style=filled]
+	1569596458896 -> 1569596458768
+	1569596391056 [label=".\npos: None\nnullable: False\nfirstpos: {1, 2, 3}\nlastpos: {3}" fillcolor=burlywood style=filled]
+	1569596458768 -> 1569596391056
+	1569592068944 [label="*\npos: None\nnullable: True\nfirstpos: {1, 2}\nlastpos: {1, 2}" fillcolor=burlywood style=filled]
+	1569596391056 -> 1569592068944
+	1569592070352 [label="|\npos: None\nnullable: False\nfirstpos: {1, 2}\nlastpos: {1, 2}" fillcolor=burlywood style=filled]
+	1569592068944 -> 1569592070352
+	1569592069008 [label="a\npos: 1\nnullable: False\nfirstpos: {1}\nlastpos: {1}" fillcolor=lightgreen style=filled]
+	1569592070352 -> 1569592069008
+	1569592073488 [label="b\npos: 2\nnullable: False\nfirstpos: {2}\nlastpos: {2}" fillcolor=lightgreen style=filled]
+	1569592070352 -> 1569592073488
+	1569592068880 [label="a\npos: 3\nnullable: False\nfirstpos: {3}\nlastpos: {3}" fillcolor=lightgreen style=filled]
+	1569596391056 -> 1569592068880
+	1569596458640 [label="b\npos: 4\nnullable: False\nfirstpos: {4}\nlastpos: {4}" fillcolor=lightgreen style=filled]
+	1569596458768 -> 1569596458640
+	1569596458832 [label="b\npos: 5\nnullable: False\nfirstpos: {5}\nlastpos: {5}" fillcolor=lightgreen style=filled]
+	1569596458896 -> 1569596458832
+	1569596458576 [label="#\npos: 6\nnullable: False\nfirstpos: {6}\nlastpos: {6}" fillcolor=lightgreen style=filled]
+	1569596459152 -> 1569596458576
 }
