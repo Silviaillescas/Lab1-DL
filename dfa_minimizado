@@ -6,10 +6,12 @@ digraph {
 	M2 [label=M2 fillcolor=white shape=circle style=filled]
 	"" [label="" shape=none]
 	"" -> M2
-	M2 -> M3 [label=a]
-	M3 -> M1 [label=c]
-	M3 -> M1 [label=b]
-	M1 -> M0 [label=a]
-	M1 -> M1 [label=c]
-	M1 -> M1 [label=b]
+	M2 -> M2 [label=b]
+	M2 -> M1 [label=a]
+	M1 -> M3 [label=b]
+	M1 -> M1 [label=a]
+	M3 -> M0 [label=b]
+	M3 -> M1 [label=a]
+	M0 -> M2 [label=b]
+	M0 -> M1 [label=a]
 }
