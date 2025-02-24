@@ -1,0 +1,26 @@
+// Árbol Sintáctico
+digraph {
+	1680200053776 [label=".\npos: None\nnullable: False"]
+	1680200053520 [label=".\npos: None\nnullable: False"]
+	1680200053776 -> 1680200053520
+	1680200053392 [label=".\npos: None\nnullable: False"]
+	1680200053520 -> 1680200053392
+	1680200051280 [label=".\npos: None\nnullable: False"]
+	1680200053392 -> 1680200051280
+	1680195660304 [label="*\npos: None\nnullable: True"]
+	1680200051280 -> 1680195660304
+	1680195661840 [label="|\npos: None\nnullable: False"]
+	1680195660304 -> 1680195661840
+	1680195660368 [label="a\npos: 1\nnullable: False"]
+	1680195661840 -> 1680195660368
+	1680195664976 [label="b\npos: 2\nnullable: False"]
+	1680195661840 -> 1680195664976
+	1680195660240 [label="a\npos: 3\nnullable: False"]
+	1680200051280 -> 1680195660240
+	1680200053264 [label="b\npos: 4\nnullable: False"]
+	1680200053392 -> 1680200053264
+	1680200053456 [label="b\npos: 5\nnullable: False"]
+	1680200053520 -> 1680200053456
+	1680200053200 [label="#\npos: 6\nnullable: False"]
+	1680200053776 -> 1680200053200
+}
