@@ -1,9 +1,9 @@
 // DFA
 digraph {
-	S2 [label=S2 fillcolor=white shape=circle style=filled]
-	S1 [label=S1 fillcolor=white shape=circle style=filled]
 	S3 [label=S3 fillcolor=lightblue shape=doublecircle style=filled]
+	S1 [label=S1 fillcolor=white shape=circle style=filled]
 	S0 [label=S0 fillcolor=white shape=circle style=filled]
+	S2 [label=S2 fillcolor=white shape=circle style=filled]
 	"" [label="" shape=none]
 	"" -> S0
 	S0 -> S0 [label=b]

@@ -326,6 +326,16 @@ def minimize_dfa(dfa_transitions, states, initial_state, accepting_states):
     new_states = set(block_to_name.values())
     return new_states, new_dfa_transitions, new_initial_state, new_accepting_states
 
+def process_string(dfa_transitions, initial_state, accepting_states, test_string):
+    """ Procesa una cadena en el AFD generado y determina si es aceptada. """
+    current_state = initial_state
+    for char in test_string:
+        if (current_state, char) in dfa_transitions:
+            current_state = dfa_transitions[(current_state, char)]
+        else:
+            return False  # Transición no válida, la cadena no es aceptada
+    return current_state in accepting_states
+
 # ---------------------------
 # Función principal: integra todos los pasos
 # ---------------------------
@@ -398,3 +408,12 @@ if __name__ == "__main__":
 
     # Dibujo del DFA minimizado
     visualize_dfa(new_states, new_dfa_transitions, new_initial_state, new_accepting_states, "dfa_minimizado")
+
+    # Solicitar cadena de entrada al usuario
+    test_string = input("Ingresa la cadena a evaluar: ")
+
+    # Evaluar la cadena con el AFD generado
+    accepted = process_string(new_dfa_transitions, new_initial_state, new_accepting_states, test_string)
+
+    # Mostrar el resultado de la evaluación
+    print(f"La cadena '{test_string}' es {'ACEPTADA' if accepted else 'RECHAZADA'} por el AFD.")
